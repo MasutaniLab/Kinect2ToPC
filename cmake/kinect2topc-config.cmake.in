@@ -1,0 +1,54 @@
+# Kinect2ToPC CMake config file
+#
+# This file sets the following variables:
+# Kinect2ToPC_FOUND - Always TRUE.
+# Kinect2ToPC_INCLUDE_DIRS - Directories containing the Kinect2ToPC include files.
+# Kinect2ToPC_IDL_DIRS - Directories containing the Kinect2ToPC IDL files.
+# Kinect2ToPC_LIBRARIES - Libraries needed to use Kinect2ToPC.
+# Kinect2ToPC_DEFINITIONS - Compiler flags for Kinect2ToPC.
+# Kinect2ToPC_VERSION - The version of Kinect2ToPC found.
+# Kinect2ToPC_VERSION_MAJOR - The major version of Kinect2ToPC found.
+# Kinect2ToPC_VERSION_MINOR - The minor version of Kinect2ToPC found.
+# Kinect2ToPC_VERSION_REVISION - The revision version of Kinect2ToPC found.
+# Kinect2ToPC_VERSION_CANDIDATE - The candidate version of Kinect2ToPC found.
+
+message(STATUS "Found Kinect2ToPC-@PROJECT_VERSION@")
+set(Kinect2ToPC_FOUND TRUE)
+
+find_package(<dependency> REQUIRED)
+
+#set(Kinect2ToPC_INCLUDE_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@"
+#    ${<dependency>_INCLUDE_DIRS}
+#    )
+#
+#set(Kinect2ToPC_IDL_DIRS
+#    "@CMAKE_INSTALL_PREFIX@/include/@PROJECT_NAME_LOWER@-@PROJECT_VERSION_MAJOR@/idl")
+set(Kinect2ToPC_INCLUDE_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@"
+    ${<dependency>_INCLUDE_DIRS}
+    )
+set(Kinect2ToPC_IDL_DIRS
+    "@CMAKE_INSTALL_PREFIX@/include/@CPACK_PACKAGE_FILE_NAME@/idl")
+
+
+if(WIN32)
+    set(Kinect2ToPC_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_STATIC_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+else(WIN32)
+    set(Kinect2ToPC_LIBRARIES
+        "@CMAKE_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/@CMAKE_SHARED_LIBRARY_PREFIX@@PROJECT_NAME_LOWER@@CMAKE_SHARED_LIBRARY_SUFFIX@"
+        ${<dependency>_LIBRARIES}
+        )
+endif(WIN32)
+
+set(Kinect2ToPC_DEFINITIONS ${<dependency>_DEFINITIONS})
+
+set(Kinect2ToPC_VERSION @PROJECT_VERSION@)
+set(Kinect2ToPC_VERSION_MAJOR @PROJECT_VERSION_MAJOR@)
+set(Kinect2ToPC_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+set(Kinect2ToPC_VERSION_REVISION @PROJECT_VERSION_REVISION@)
+set(Kinect2ToPC_VERSION_CANDIDATE @PROJECT_VERSION_CANDIDATE@)
+
