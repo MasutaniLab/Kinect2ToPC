@@ -2,7 +2,7 @@
 
 大阪電気通信大学  
 升谷 保博  
-2017年11月27日
+2018年1月4日（VS2015とPCL 1.8.1へ移行）
 
 ## はじめに
 
@@ -10,9 +10,9 @@
 出力するRTコンポーネントです．
 - 以下の環境で開発，動作確認しています．
   - Windows 10 64bit版
-  - Visual Studio 2012
+  - Visual Studio 2015 x64
   - OpenRTM-aist 1.1.2 64bit版
-  - Point Cloud Library 1.7.2 AllinOne (VS2012 64bit用)
+  - Point Cloud Library 1.8.1 AllinOne (VS2015 64bit用)
   - Microsoft Kinect Xbox One (Kinect v2)
   - Kinect for Windows SDK v2.0
 - 杉浦 司 (UnaNancyOwen) 氏の
@@ -46,15 +46,14 @@
 ## インストール
 
 - [OpenRTM-aist 1.1.2](http://www.openrtm.org/openrtm/ja/node/6034)をインストール．
-- [PCL-1.7.2のWindows用AllInOne](https://onedrive.live.com/?authkey=!ACFnPNzPhXJ0FtU&id=EC9EBB2646FF189A!49089&cid=EC9EBB2646FF189A)
-をインストール（2017年3月下旬に削除されたようです）．
+- [GitHubのpclのRelease](https://github.com/PointCloudLibrary/pcl/releases)の中のWindows用AllInOne`PCL-X.X.X-AllInOne-msvcYYYY-winZZ.exe`をインストール．
 - [Kinect for Windows SDK v2.0](https://www.microsoft.com/en-us/download/details.aspx?id=44561)
 をインストール．
 - [KinectToPC](https://github.com/MasutaniLab/Kinect2ToPC)
 をクローンかダウンロードする．
 - CMake
   - ビルドディレクトリはトップ直下の`build`
-  - ConfigureはVisual Studio 64bit
+  - - ConfigureはVisual Studioのバージョンとプラットフォームに合わせる．
 - `build\Kinect2ToPC.sln`をVisual Studioで開く．
 - パフォーマンスを出すために，Releaseでビルドがお勧め．
 
