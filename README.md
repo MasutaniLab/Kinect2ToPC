@@ -1,4 +1,4 @@
-# RTC:PCL Grabber for Microsoft Kinect v2
+# Point Cloud Grabber for Microsoft Kinect v2
 
 大阪電気通信大学  
 升谷 保博  
