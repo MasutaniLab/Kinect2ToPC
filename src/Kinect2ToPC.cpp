@@ -57,7 +57,7 @@ Kinect2ToPC::~Kinect2ToPC()
 
 RTC::ReturnCode_t Kinect2ToPC::onInitialize()
 {
-  cout << "Kinect2ToPC::onInitialize()" << endl;
+  RTC_INFO(("onInitialize()"));
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
   // Set InPort buffers
@@ -103,7 +103,7 @@ RTC::ReturnCode_t Kinect2ToPC::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Kinect2ToPC::onActivated(RTC::UniqueId ec_id)
 {
-  cout << "Kinect2ToPC::onActivated()" << endl;
+  RTC_INFO(("onActivated()"));
   try {
     m_interface = boost::make_shared<pcl::Kinect2Grabber>();
     m_pc.type = "xyzrgb";
@@ -139,10 +139,10 @@ RTC::ReturnCode_t Kinect2ToPC::onActivated(RTC::UniqueId ec_id)
     m_interface->registerCallback(f);
     m_interface->start();
   } catch (pcl::io::IOException& e) {
-    cerr << "Failed to create a grabber: " << e.what () << endl;
+    RTC_ERROR(("Failed to create a grabber: %s", e.what()));
     return RTC::RTC_ERROR;
   } catch (...) {
-    cerr << "An exception occurred while starting grabber" << endl;
+    RTC_ERROR(("An exception occurred while starting grabber"));
     return RTC::RTC_ERROR;
   }
   return RTC::RTC_OK;
@@ -151,7 +151,7 @@ RTC::ReturnCode_t Kinect2ToPC::onActivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Kinect2ToPC::onDeactivated(RTC::UniqueId ec_id)
 {
-  cout << "Kinect2ToPC::onDeactivated()" << endl;
+  RTC_INFO(("onDeactivated()"));
   m_interface->stop();
   m_interface = nullptr;
 
@@ -223,7 +223,7 @@ void Kinect2ToPC::cloud_cb(const pcl::PointCloud<PointT>::ConstPtr &cloud)
   if (++count == 30)
   {
     double now = pcl::getTime();
-    std::cout << "Average framerate: " << double(count)/double(now - last) << " Hz" <<  std::endl;
+    RTC_INFO(("Average framerate: %lf Hz", double(count) / double(now - last)));
     count = 0;
     last = now;
   }
