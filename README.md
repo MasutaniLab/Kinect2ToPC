@@ -2,7 +2,7 @@
 
 大阪電気通信大学  
 升谷 保博  
-2018年1月4日（VS2015とPCL 1.8.1へ移行）
+2019年11月19日（OpenRTM-aist 1.2.0に対応）
 
 ## はじめに
 
@@ -11,7 +11,7 @@
 - 以下の環境で開発，動作確認しています．
   - Windows 10 64bit版
   - Visual Studio 2015 x64
-  - OpenRTM-aist 1.1.2 64bit版
+  - OpenRTM-aist 1.2.0 64bit版
   - Point Cloud Library 1.8.1 AllinOne (VS2015 64bit用)
   - Microsoft Kinect Xbox One (Kinect v2)
   - Kinect for Windows SDK v2.0
@@ -47,7 +47,7 @@ Choeonoidの深度センサのモデルに合わせるためにこのように�
 
 ## インストール
 
-- [OpenRTM-aist 1.1.2](http://www.openrtm.org/openrtm/ja/node/6034)をインストール．
+- [OpenRTM-aist 1.2.0](https://www.openrtm.org/openrtm/ja/node/6570)をインストール．
 - [GitHubのpclのRelease](https://github.com/PointCloudLibrary/pcl/releases)の中のWindows用AllInOne`PCL-X.X.X-AllInOne-msvcYYYY-winZZ.exe`をインストール．
 - [Kinect for Windows SDK v2.0](https://www.microsoft.com/en-us/download/details.aspx?id=44561)
 をインストール．
@@ -78,3 +78,7 @@ rtc.confに`corba.args: -ORBgiopMaxMsgSize`の設定が必要です．
 - [`pointcloud.idl`](https://github.com/gbiggs/rtcpcl/blob/master/pc_type/pointcloud.idl)に記述されている仕様と，[RT-Components for the Point Cloud Library](https://github.com/gbiggs/rtcpcl/)の関数の仕様が異なっていますが，`pointcloud.idl`本来の仕様のデータを出力しています．
 - 1回に送出するデータ量が約3.3MB．もっと圧縮して送る方がいいのかもしれません．
 - Windowsでしか動作しません．
+
+## 履歴
+- 2018年1月4日 VS2015とPCL 1.8.1へ移行
+- 2017年11月27日 最初のリリース
