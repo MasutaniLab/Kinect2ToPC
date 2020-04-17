@@ -58,8 +58,8 @@ namespace pcl
             pcl::PointCloud<pcl::PointXYZRGB>::Ptr convertRGBDepthToPointXYZRGB( RGBQUAD* colorBuffer, UINT16* depthBuffer );
             pcl::PointCloud<pcl::PointXYZRGBA>::Ptr convertRGBADepthToPointXYZRGBA( RGBQUAD* colorBuffer, UINT16* depthBuffer );
 
-            boost::thread thread;
-            mutable boost::mutex mutex;
+            std::thread thread;
+            mutable std::mutex mutex;
 
             void threadFunction();
 
@@ -270,12 +270,12 @@ namespace pcl
 
         running = true;
 
-        thread = boost::thread( &Kinect2Grabber::threadFunction, this );
+        thread = std::thread( &Kinect2Grabber::threadFunction, this );
     }
 
     void pcl::Kinect2Grabber::stop()
     {
-        boost::unique_lock<boost::mutex> lock( mutex );
+        std::unique_lock<std::mutex> lock(mutex);
 
         quit = true;
         running = false;
@@ -285,7 +285,7 @@ namespace pcl
 
     bool pcl::Kinect2Grabber::isRunning() const
     {
-        boost::unique_lock<boost::mutex> lock( mutex );
+        std::unique_lock<std::mutex> lock(mutex);
 
         return running;
 
@@ -305,7 +305,7 @@ namespace pcl
     void pcl::Kinect2Grabber::threadFunction()
     {
         while( !quit ){
-            boost::unique_lock<boost::mutex> lock( mutex );
+            std::unique_lock<std::mutex> lock(mutex);
 
             // Acquire Latest Color Frame
             IColorFrame* colorFrame = nullptr;
