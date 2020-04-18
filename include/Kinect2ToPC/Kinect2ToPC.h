@@ -1,4 +1,4 @@
-// -*- C++ -*-
+ï»¿// -*- C++ -*-
 /*!
  * @file  Kinect2ToPC.h
  * @brief RTC:PCL Grabber for Kinect
@@ -19,7 +19,7 @@
 
 // </rtc-template>
 
-//Kinect.h‚Æpointcloud.hh‚É‚¨‚¯‚éUINT16, UINT32, INT32‚ÌÕ“Ë‚Ì‰ñ”ğ
+//Kinect.hã¨pointcloud.hhã«ãŠã‘ã‚‹UINT16, UINT32, INT32ã®è¡çªã®å›é¿
 #define UINT16 IDL_UINT16
 #define UINT32 IDL_UINT32
 #define INT32 IDL_INT32
@@ -28,14 +28,15 @@
 #include "pointcloudStub.h"
 
 // </rtc-template>
-//Kinect.h‚Æpointcloud.hh‚É‚¨‚¯‚éUINT16, UINT32, INT32‚ÌÕ“Ë‚Ì‰ñ”ğ
+//Kinect.hã¨pointcloud.hhã«ãŠã‘ã‚‹UINT16, UINT32, INT32ã®è¡çªã®å›é¿
 #undef UINT16
 #undef UINT32
 #undef INT32
 
 // Service Consumer stub headers
 // <rtc-template block="port_stub_h">
-using namespace PointCloudTypes;
+
+
 // </rtc-template>
 
 #include <rtm/Manager.h>
@@ -257,7 +258,7 @@ class Kinect2ToPC
   PointCloudTypes::PointCloud m_pc;
   /*!
    */
-  OutPort<PointCloudTypes::PointCloud> m_pcOut;
+  RTC::OutPort<PointCloudTypes::PointCloud> m_pcOut;
   
   // </rtc-template>
 
