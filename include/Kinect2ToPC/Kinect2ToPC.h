@@ -19,11 +19,19 @@
 
 // </rtc-template>
 
+//Kinect.hÇ∆pointcloud.hhÇ…Ç®ÇØÇÈUINT16, UINT32, INT32ÇÃè’ìÀÇÃâÒî
+#define UINT16 IDL_UINT16
+#define UINT32 IDL_UINT32
+#define INT32 IDL_INT32
 // Service Consumer stub headers
 // <rtc-template block="consumer_stub_h">
 #include "pointcloudStub.h"
 
 // </rtc-template>
+//Kinect.hÇ∆pointcloud.hhÇ…Ç®ÇØÇÈUINT16, UINT32, INT32ÇÃè’ìÀÇÃâÒî
+#undef UINT16
+#undef UINT32
+#undef INT32
 
 // Service Consumer stub headers
 // <rtc-template block="port_stub_h">
@@ -36,18 +44,12 @@ using namespace PointCloudTypes;
 #include <rtm/DataInPort.h>
 #include <rtm/DataOutPort.h>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl/io/grabber.h>
-#include <pcl/common/time.h>
-#include <pcl/io/io_exception.h>
+#include <vector>
+#include <chrono>
+#include <Windows.h>
+#include <Kinect.h>
 
 using namespace RTC;
-
-typedef pcl::PointXYZRGB PointT;
 
 /*!
  * @class Kinect2ToPC
@@ -282,8 +284,29 @@ class Kinect2ToPC
   // <rtc-template block="private_operation">
   
   // </rtc-template>
-   boost::shared_ptr<pcl::Grabber> m_interface;
-   void cloud_cb(const pcl::PointCloud<PointT>::ConstPtr &cloud);
+   IKinectSensor* m_sensor;
+   ICoordinateMapper* m_mapper;
+   int m_colorWidth;
+   int m_colorHeight;
+   std::vector<RGBQUAD> m_colorBuffer;
+   int m_depthWidth;
+   int m_depthHeight;
+   std::vector<UINT16> m_depthBuffer;
+   IColorFrameReader* m_colorReader;
+   IDepthFrameReader* m_depthReader;
+
+   int m_fpsCounter;
+   std::chrono::steady_clock::time_point m_steadyStart;
+   std::chrono::steady_clock::time_point m_steadyEnd;
+
+   template<class Interface>
+   inline void SafeRelease(Interface*& IRelease)
+   {
+     if (IRelease != NULL) {
+       IRelease->Release();
+       IRelease = NULL;
+     }
+   }
 };
 
 
