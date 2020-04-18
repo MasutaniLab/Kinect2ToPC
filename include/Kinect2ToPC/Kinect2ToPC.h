@@ -19,19 +19,11 @@
 
 // </rtc-template>
 
-//Kinect.hとpointcloud.hhにおけるUINT16, UINT32, INT32の衝突の回避
-#define UINT16 IDL_UINT16
-#define UINT32 IDL_UINT32
-#define INT32 IDL_INT32
 // Service Consumer stub headers
 // <rtc-template block="consumer_stub_h">
 #include "pointcloudStub.h"
 
 // </rtc-template>
-//Kinect.hとpointcloud.hhにおけるUINT16, UINT32, INT32の衝突の回避
-#undef UINT16
-#undef UINT32
-#undef INT32
 
 // Service Consumer stub headers
 // <rtc-template block="port_stub_h">
