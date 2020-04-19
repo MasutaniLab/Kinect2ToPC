@@ -382,7 +382,6 @@ RTC::ReturnCode_t Kinect2ToPC::onExecute(RTC::UniqueId ec_id)
           // Coordinate Mapping Depth to Color Space, and Setting PointCloud RGB
           ColorSpacePoint colorSpacePoint = { 0.0f, 0.0f };
           m_mapper->MapDepthPointToColorSpace(depthSpacePoint, depth, &colorSpacePoint);
-          m_mapper->MapDepthPointToColorSpace(depthSpacePoint, depth/2, &colorSpacePoint);
           int colorX = static_cast<int>(std::floor(colorSpacePoint.X + 0.5f));
           int colorY = static_cast<int>(std::floor(colorSpacePoint.Y + 0.5f));
           CameraSpacePoint cameraSpacePoint = { FLT_NAN, FLT_NAN, FLT_NAN };
