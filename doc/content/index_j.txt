@@ -1,4 +1,4 @@
-Kinect2ToPC - 日本語
+﻿Kinect2ToPC - 日本語
 =======================
 
 
@@ -98,6 +98,12 @@ Kinect2ToPCは ``Kinect2ToPCComp`` を実行（ ``${prefix}/components/bin`` に
 ================ ================== ================ ====
 パラメータ       データ型           デフォルト値     意味
 ================ ================== ================ ====
+transX           float              0.0              
+transY           float              0.0              
+transZ           float              0.0              
+rotX             float              0.0              
+rotY             float              0.0              
+rotZ             float              0.0              
 ================ ================== ================ ====
 
 ポート
@@ -108,6 +114,7 @@ Kinect2ToPCは ``Kinect2ToPCComp`` を実行（ ``${prefix}/components/bin`` に
 =============== =========== ============================== ====
 ポート名        ポート型    データ型                       意味
 =============== =========== ============================== ====
+command         InPort      RTC::TimedString               
 pc              OutPort     PointCloudTypes::PointCloud    
 =============== =========== ============================== ====
 

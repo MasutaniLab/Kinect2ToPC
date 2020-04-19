@@ -21,6 +21,7 @@
 
 // Service Consumer stub headers
 // <rtc-template block="consumer_stub_h">
+#include "BasicDataTypeStub.h"
 #include "pointcloudStub.h"
 
 // </rtc-template>
@@ -39,6 +40,7 @@
 
 #include <vector>
 #include <chrono>
+#include <Eigen/Geometry>
 #include <Windows.h>
 #include <Kinect.h>
 
@@ -236,11 +238,51 @@ class Kinect2ToPC
 
   // Configuration variable declaration
   // <rtc-template block="config_declare">
+  /*!
+   * 
+   * - Name:  transX
+   * - DefaultValue: 0.0
+   */
+  float m_transX;
+  /*!
+   * 
+   * - Name:  transY
+   * - DefaultValue: 0.0
+   */
+  float m_transY;
+  /*!
+   * 
+   * - Name:  transZ
+   * - DefaultValue: 0.0
+   */
+  float m_transZ;
+  /*!
+   * 
+   * - Name:  rotX
+   * - DefaultValue: 0.0
+   */
+  float m_rotX;
+  /*!
+   * 
+   * - Name:  rotY
+   * - DefaultValue: 0.0
+   */
+  float m_rotY;
+  /*!
+   * 
+   * - Name:  rotZ
+   * - DefaultValue: 0.0
+   */
+  float m_rotZ;
 
   // </rtc-template>
 
   // DataInPort declaration
   // <rtc-template block="inport_declare">
+  RTC::TimedString m_command;
+  /*!
+   */
+  RTC::InPort<RTC::TimedString> m_commandIn;
   
   // </rtc-template>
 
@@ -291,6 +333,11 @@ class Kinect2ToPC
    int m_fpsCounter;
    std::chrono::steady_clock::time_point m_steadyStart;
    std::chrono::steady_clock::time_point m_steadyEnd;
+
+   bool m_coordinateTransformation;
+   Eigen::Affine3f m_transform;
+
+   bool m_running;
 
    template<class Interface>
    inline void SafeRelease(Interface*& IRelease)

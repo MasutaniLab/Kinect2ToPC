@@ -13,10 +13,10 @@
 ======================================================================
 # <rtc-template block="module">
 Module Name: Kinect2ToPC
-Description: RTC:PCL Grabber for Kinect
+Description: RTC:PCL Grabber for Kinect v2
 Version:     1.0.0
 Vendor:      MasutaniLab
-Category:    RTCPCL
+Category:    PointCloud
 Kind:        DataFlowComponent
 Comp. Type:  STATIC
 Act. Type:   PERIODIC
@@ -60,6 +60,24 @@ Lang Type:
 ======================================================================
 # <rtc-template block="inport">
 
+	Name:        command
+	PortNumber:  0
+	Description: 
+	PortType: 
+	DataType:    RTC::TimedString
+	MaxOut: 
+	[Data Elements]
+		Name:
+		Type:            
+		Number:          
+		Semantics:       
+		Unit:            
+		Frequency:       
+		Operation Cycle: 
+		RangeLow:
+		RangeHigh:
+		DefaultValue:
+
 
 # </rtc-template>
 
@@ -100,6 +118,55 @@ Lang Type:
     Configuration definition
 ======================================================================
 # <rtc-template block="configuration">
+	Configuration:
+		Name:             transX
+		Description:     
+		Type:            float
+		DefaultValue:     0.0
+		Unit:            
+		Range:           
+		Constraint:      
+
+		Name:             transY
+		Description:     
+		Type:            float
+		DefaultValue:     0.0
+		Unit:            
+		Range:           
+		Constraint:      
+
+		Name:             transZ
+		Description:     
+		Type:            float
+		DefaultValue:     0.0
+		Unit:            
+		Range:           
+		Constraint:      
+
+		Name:             rotX
+		Description:     
+		Type:            float
+		DefaultValue:     0.0
+		Unit:            
+		Range:           
+		Constraint:      
+
+		Name:             rotY
+		Description:     
+		Type:            float
+		DefaultValue:     0.0
+		Unit:            
+		Range:           
+		Constraint:      
+
+		Name:             rotZ
+		Description:     
+		Type:            float
+		DefaultValue:     0.0
+		Unit:            
+		Range:           
+		Constraint:      
+
 # </rtc-template> 
 
 This software is developed at the National Institute of Advanced

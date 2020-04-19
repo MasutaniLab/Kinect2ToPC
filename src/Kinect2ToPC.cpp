@@ -1,4 +1,4 @@
-// -*- C++ -*-
+﻿// -*- C++ -*-
 /*!
  * @file  Kinect2ToPC.cpp
  * @brief RTC:PCL Grabber for Kinect
@@ -7,12 +7,14 @@
  * $Id$
  */
 
+#define _USE_MATH_DEFINES
 #include "Kinect2ToPC.h"
 
 #include <limits>
 #include <iostream>
 #include <string>
 using namespace std;
+using namespace Eigen;
 
 const float FLT_NAN = std::numeric_limits<float>::quiet_NaN();
 
@@ -22,15 +24,39 @@ static const char* kinect2topc_spec[] =
   {
     "implementation_id", "Kinect2ToPC",
     "type_name",         "Kinect2ToPC",
-    "description",       "RTC:PCL Grabber for Kinect",
+    "description",       "RTC:PCL Grabber for Kinect v2",
     "version",           "1.0.0",
     "vendor",            "MasutaniLab",
-    "category",          "RTCPCL",
+    "category",          "PointCloud",
     "activity_type",     "PERIODIC",
     "kind",              "DataFlowComponent",
     "max_instance",      "1",
     "language",          "C++",
     "lang_type",         "compile",
+    // Configuration variables
+    "conf.default.transX", "0.0",
+    "conf.default.transY", "0.0",
+    "conf.default.transZ", "0.0",
+    "conf.default.rotX", "0.0",
+    "conf.default.rotY", "0.0",
+    "conf.default.rotZ", "0.0",
+
+    // Widget
+    "conf.__widget__.transX", "text",
+    "conf.__widget__.transY", "text",
+    "conf.__widget__.transZ", "text",
+    "conf.__widget__.rotX", "text",
+    "conf.__widget__.rotY", "text",
+    "conf.__widget__.rotZ", "text",
+    // Constraints
+
+    "conf.__type__.transX", "float",
+    "conf.__type__.transY", "float",
+    "conf.__type__.transZ", "float",
+    "conf.__type__.rotX", "float",
+    "conf.__type__.rotY", "float",
+    "conf.__type__.rotZ", "float",
+
     ""
   };
 // </rtc-template>
@@ -42,6 +68,7 @@ static const char* kinect2topc_spec[] =
 Kinect2ToPC::Kinect2ToPC(RTC::Manager* manager)
     // <rtc-template block="initializer">
   : RTC::DataFlowComponentBase(manager),
+    m_commandIn("command", m_command),
     m_pcOut("pc", m_pc)
 
     // </rtc-template>
@@ -63,6 +90,7 @@ RTC::ReturnCode_t Kinect2ToPC::onInitialize()
   // Registration: InPort/OutPort/Service
   // <rtc-template block="registration">
   // Set InPort buffers
+  addInPort("command", m_commandIn);
   
   // Set OutPort buffer
   addOutPort("pc", m_pcOut);
@@ -76,6 +104,13 @@ RTC::ReturnCode_t Kinect2ToPC::onInitialize()
   // </rtc-template>
 
   // <rtc-template block="bind_config">
+  // Bind variables and configuration variable
+  bindParameter("transX", m_transX, "0.0");
+  bindParameter("transY", m_transY, "0.0");
+  bindParameter("transZ", m_transZ, "0.0");
+  bindParameter("rotX", m_rotX, "0.0");
+  bindParameter("rotY", m_rotY, "0.0");
+  bindParameter("rotZ", m_rotZ, "0.0");
   // </rtc-template>
   
   return RTC::RTC_OK;
@@ -107,6 +142,22 @@ RTC::ReturnCode_t Kinect2ToPC::onActivated(RTC::UniqueId ec_id)
 {
   RTC_INFO(("onActivated()"));
   try {
+    if (m_rotX == 0 && m_rotY == 0 && m_rotZ == 0 && m_transX == 0 && m_transY == 0 && m_transZ == 0) {
+      m_coordinateTransformation = false;
+    } else {
+      m_coordinateTransformation = true;
+      const float M_PIF = float(M_PI);
+      float radX = m_rotX * M_PIF / 180;
+      float radY = m_rotY * M_PIF / 180;
+      float radZ = m_rotZ * M_PIF / 180;
+      m_transform
+        = Translation3f(m_transX, m_transY, m_transZ)
+        * AngleAxisf(radZ, Vector3f::UnitZ())
+        * AngleAxisf(radY, Vector3f::UnitY())
+        * AngleAxisf(radX, Vector3f::UnitX());
+      cout << "m_transform:" << endl << m_transform.matrix() << endl;
+    }
+
     HRESULT result;
     // Create Sensor Instance
     m_sensor = nullptr;
@@ -238,6 +289,9 @@ RTC::ReturnCode_t Kinect2ToPC::onActivated(RTC::UniqueId ec_id)
     m_pc.row_step = m_pc.point_step * m_pc.width;
     m_pc.data.length(m_pc.height* m_pc.row_step);
 
+    m_steadyStart = chrono::steady_clock::now();
+    m_fpsCounter = 0;
+    m_running = true;
   } catch (const std::exception& e) {
     RTC_ERROR((e.what()));
     return RTC::RTC_ERROR;
@@ -267,86 +321,109 @@ RTC::ReturnCode_t Kinect2ToPC::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t Kinect2ToPC::onExecute(RTC::UniqueId ec_id)
 {
-  try {
-    HRESULT result;
-    // Acquire Latest Color Frame
-    IColorFrame* colorFrame = nullptr;
-    result = m_colorReader->AcquireLatestFrame(&colorFrame);
-    if (SUCCEEDED(result)) {
-      // Retrieved Color Data
-      result = colorFrame->CopyConvertedFrameDataToArray(
-        m_colorBuffer.size() * sizeof(RGBQUAD), 
-        reinterpret_cast<BYTE*>(&m_colorBuffer[0]), 
-        ColorImageFormat::ColorImageFormat_Bgra);
-      if (FAILED(result)) {
-        throw std::exception("Exception : IColorFrame::CopyConvertedFrameDataToArray()");
-      }
+  if (m_commandIn.isNew()) {
+    m_commandIn.read();
+    string s = m_command.data;
+    if (s == "start") {
+      m_running = true;
+      RTC_INFO(("m_running = true"));
+    } else if (s == "stop") {
+      m_running = false;
+      RTC_INFO(("m_running = false"));
     } else {
-      return RTC::RTC_OK;
+      RTC_ERROR(("未知のコマンド: %s", s.c_str()));
+      return RTC::RTC_ERROR;
     }
-    SafeRelease(colorFrame);
+  }
 
-    // Acquire Latest Depth Frame
-    IDepthFrame* depthFrame = nullptr;
-    result = m_depthReader->AcquireLatestFrame(&depthFrame);
-    if (SUCCEEDED(result)) {
-      // Retrieved Depth Data
-      result = depthFrame->CopyFrameDataToArray(m_depthBuffer.size(), &m_depthBuffer[0]);
-      if (FAILED(result)) {
-        throw std::exception("Exception : IDepthFrame::CopyFrameDataToArray()");
-      }
-    } else {
-      return RTC::RTC_OK;
-    }
-    SafeRelease(depthFrame);
-
-
-    float* dst_cloud = (float*)m_pc.data.get_buffer();
-
-    for (int y = 0; y < m_depthHeight; y++) {
-      for (int x = 0; x < m_depthWidth; x++) {
-
-        DepthSpacePoint depthSpacePoint = { static_cast<float>(x), static_cast<float>(y) };
-        UINT16 depth = m_depthBuffer[y * m_depthWidth + x];
-
-        // Coordinate Mapping Depth to Color Space, and Setting PointCloud RGB
-        ColorSpacePoint colorSpacePoint = { 0.0f, 0.0f };
-        m_mapper->MapDepthPointToColorSpace(depthSpacePoint, depth, &colorSpacePoint);
-        int colorX = static_cast<int>(std::floor(colorSpacePoint.X + 0.5f));
-        int colorY = static_cast<int>(std::floor(colorSpacePoint.Y + 0.5f));
-        CameraSpacePoint cameraSpacePoint = { FLT_NAN, FLT_NAN, FLT_NAN };
-        float rgb = FLT_NAN;
-        if ((0 <= colorX) && (colorX < m_colorWidth) && (0 <= colorY) && (colorY < m_colorHeight)) {
-          RGBQUAD color = m_colorBuffer[colorY * m_colorWidth + colorX];
-          uint32_t ui = (color.rgbRed << 16) | (color.rgbGreen << 8) | color.rgbBlue;
-          rgb = *reinterpret_cast<float*>(&ui);
-          m_mapper->MapDepthPointToCameraSpace(depthSpacePoint, depth, &cameraSpacePoint);
+  if (m_running) {
+    try {
+      HRESULT result;
+      // Acquire Latest Color Frame
+      IColorFrame* colorFrame = nullptr;
+      result = m_colorReader->AcquireLatestFrame(&colorFrame);
+      if (SUCCEEDED(result)) {
+        // Retrieved Color Data
+        result = colorFrame->CopyConvertedFrameDataToArray(
+          m_colorBuffer.size() * sizeof(RGBQUAD),
+          reinterpret_cast<BYTE*>(&m_colorBuffer[0]),
+          ColorImageFormat::ColorImageFormat_Bgra);
+        if (FAILED(result)) {
+          throw std::exception("Exception : IColorFrame::CopyConvertedFrameDataToArray()");
         }
-
-        dst_cloud[0] = -cameraSpacePoint.X; //x���̌����𔽓]
-        dst_cloud[1] = cameraSpacePoint.Y;
-        dst_cloud[2] = -cameraSpacePoint.Z; //z���̌����𔽓]
-        dst_cloud[3] = rgb;
-        dst_cloud += 4;
+      } else {
+        return RTC::RTC_OK;
       }
-    }
+      SafeRelease(colorFrame);
 
-    m_pcOut.write();
+      // Acquire Latest Depth Frame
+      IDepthFrame* depthFrame = nullptr;
+      result = m_depthReader->AcquireLatestFrame(&depthFrame);
+      if (SUCCEEDED(result)) {
+        // Retrieved Depth Data
+        result = depthFrame->CopyFrameDataToArray(m_depthBuffer.size(), &m_depthBuffer[0]);
+        if (FAILED(result)) {
+          throw std::exception("Exception : IDepthFrame::CopyFrameDataToArray()");
+        }
+      } else {
+        return RTC::RTC_OK;
+      }
+      SafeRelease(depthFrame);
 
-    m_fpsCounter++;
-    m_steadyEnd = chrono::steady_clock::now();
-    double timeSec = std::chrono::duration<double>(m_steadyEnd - m_steadyStart).count();
-    if (timeSec >= 1) {
-      RTC_INFO(("%f fps", m_fpsCounter / timeSec));
-      m_steadyStart = m_steadyEnd;
-      m_fpsCounter = 0;
+
+      float* dst_cloud = (float*)m_pc.data.get_buffer();
+
+      for (int y = 0; y < m_depthHeight; y++) {
+        for (int x = 0; x < m_depthWidth; x++) {
+
+          DepthSpacePoint depthSpacePoint = { static_cast<float>(x), static_cast<float>(y) };
+          UINT16 depth = m_depthBuffer[y * m_depthWidth + x];
+
+          // Coordinate Mapping Depth to Color Space, and Setting PointCloud RGB
+          ColorSpacePoint colorSpacePoint = { 0.0f, 0.0f };
+          m_mapper->MapDepthPointToColorSpace(depthSpacePoint, depth, &colorSpacePoint);
+          m_mapper->MapDepthPointToColorSpace(depthSpacePoint, depth/2, &colorSpacePoint);
+          int colorX = static_cast<int>(std::floor(colorSpacePoint.X + 0.5f));
+          int colorY = static_cast<int>(std::floor(colorSpacePoint.Y + 0.5f));
+          CameraSpacePoint cameraSpacePoint = { FLT_NAN, FLT_NAN, FLT_NAN };
+          float rgb = FLT_NAN;
+          if ((0 <= colorX) && (colorX < m_colorWidth) && (0 <= colorY) && (colorY < m_colorHeight)) {
+            RGBQUAD color = m_colorBuffer[colorY * m_colorWidth + colorX];
+            uint32_t ui = (color.rgbRed << 16) | (color.rgbGreen << 8) | color.rgbBlue;
+            rgb = *reinterpret_cast<float*>(&ui);
+            m_mapper->MapDepthPointToCameraSpace(depthSpacePoint, depth, &cameraSpacePoint);
+          }
+
+          //座標変換の前にy軸とz軸を反転させる
+          Vector3f tmp(-cameraSpacePoint.X, cameraSpacePoint.Y, -cameraSpacePoint.Z);
+          if (m_coordinateTransformation) {
+            tmp = m_transform * tmp;
+          }
+          dst_cloud[0] = tmp(0); 
+          dst_cloud[1] = tmp(1);
+          dst_cloud[2] = tmp(2);
+          dst_cloud[3] = rgb;
+          dst_cloud += 4;
+        }
+      }
+
+      m_pcOut.write();
+
+      m_fpsCounter++;
+      m_steadyEnd = chrono::steady_clock::now();
+      double timeSec = std::chrono::duration<double>(m_steadyEnd - m_steadyStart).count();
+      if (timeSec >= 1) {
+        RTC_INFO(("%f fps", m_fpsCounter / timeSec));
+        m_steadyStart = m_steadyEnd;
+        m_fpsCounter = 0;
+      }
+    } catch (const std::exception& e) {
+      RTC_ERROR((e.what()));
+      return RTC::RTC_ERROR;
+    } catch (...) {
+      RTC_ERROR(("An exception occurred in onExecute()"));
+      return RTC::RTC_ERROR;
     }
-  } catch (const std::exception& e) {
-    RTC_ERROR((e.what()));
-    return RTC::RTC_ERROR;
-  } catch (...) {
-    RTC_ERROR(("An exception occurred in onExecute()"));
-    return RTC::RTC_ERROR;
   }
 
   return RTC::RTC_OK;

@@ -1,4 +1,4 @@
-Kinect2ToPCName - English
+﻿Kinect2ToPCName - English
 ========================
 
 .. toctree::
@@ -106,6 +106,12 @@ The available configuration parameters are described below:
 ================ ================== ================ ======
 Parameter        Data type          Default Value    Effect
 ================ ================== ================ ======
+transX           float              0.0              
+transY           float              0.0              
+transZ           float              0.0              
+rotX             float              0.0              
+rotY             float              0.0              
+rotZ             float              0.0              
 ================ ================== ================ ======
 
 Ports
@@ -116,6 +122,7 @@ The ports provided by the component are described below:
 =============== =========== ============================== =======
 Name            Type        Data type                      Purpose
 =============== =========== ============================== =======
+command         InPort      RTC::TimedString               
 pc              OutPort     PointCloudTypes::PointCloud    
 =============== =========== ============================== =======
 

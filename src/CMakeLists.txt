@@ -4,6 +4,8 @@ set(standalone_srcs Kinect2ToPCComp.cpp)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules/" ${CMAKE_MODULE_PATH})
 find_package(KinectSDK2 REQUIRED)
 
+set(EIGEN_DIR "$ENV{PCL_ROOT}/3rdParty/Eigen/eigen3" CACHE PATH "Directory of Eigen")
+
 if(${OPENRTM_VERSION_MAJOR} LESS 2)
   set(OPENRTM_CFLAGS ${OPENRTM_CFLAGS} ${OMNIORB_CFLAGS})
   set(OPENRTM_INCLUDE_DIRS ${OPENRTM_INCLUDE_DIRS} ${OMNIORB_INCLUDE_DIRS})
@@ -37,6 +39,7 @@ include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_BINARY_DIR}/idl)
 include_directories(${OPENRTM_INCLUDE_DIRS})
 include_directories(${KinectSDK2_INCLUDE_DIRS})
+include_directories(${EIGEN_DIR})
 add_definitions(${OPENRTM_CFLAGS})
 
 MAP_ADD_STR(comp_hdrs "../" comp_headers)
