@@ -16,6 +16,8 @@
 using namespace std;
 using namespace Eigen;
 
+#define print(x) cout << #x ": " << x << endl;
+
 const float FLT_NAN = std::numeric_limits<float>::quiet_NaN();
 
 // Module specification
@@ -292,6 +294,7 @@ RTC::ReturnCode_t Kinect2ToPC::onActivated(RTC::UniqueId ec_id)
     m_steadyStart = chrono::steady_clock::now();
     m_fpsCounter = 0;
     m_running = true;
+    m_first = true;
   } catch (const std::exception& e) {
     RTC_ERROR((e.what()));
     return RTC::RTC_ERROR;
@@ -370,29 +373,65 @@ RTC::ReturnCode_t Kinect2ToPC::onExecute(RTC::UniqueId ec_id)
       }
       SafeRelease(depthFrame);
 
+      //データを取得した後でないとMapDepthPointToColorSpace()が正常に動作しないため，ここで処理する．
+      if (m_first) {
+        RTC_INFO(("深度カラー対応表を作成開始"));
+        for (int i = 0; i < m_NumTable; i++) {
+          UINT16 depth = i * depthPitch;
+          for (int y = 0; y < m_depthHeight; y++) {
+            for (int x = 0; x < m_depthWidth; x++) {
+              DepthSpacePoint depthSpacePoint = { static_cast<float>(x), static_cast<float>(y) };
+              ColorSpacePoint colorSpacePoint = { 0.0f, 0.0f };
+              HRESULT result = m_mapper->MapDepthPointToColorSpace(depthSpacePoint, depth, &colorSpacePoint);
+              //print(colorSpacePoint.X);
+              //print(colorSpacePoint.Y);
+              int colorX = static_cast<int>(std::floor(colorSpacePoint.X + 0.5f));
+              int colorY = static_cast<int>(std::floor(colorSpacePoint.Y + 0.5f));
+              CameraSpacePoint cameraSpacePoint = { FLT_NAN, FLT_NAN, FLT_NAN };
+              int cindex = -1;
+              if ((0 <= colorX) && (colorX < m_colorWidth) && (0 <= colorY) && (colorY < m_colorHeight)) {
+                cindex = colorY * m_colorWidth + colorX;
+              }
+              m_depthColorTable[i][y][x] = cindex;
+            }
+          }
+        }
+        RTC_INFO(("深度カラー対応表を作成終了"));
+        m_first = false;
+      }
 
       float* dst_cloud = (float*)m_pc.data.get_buffer();
 
       for (int y = 0; y < m_depthHeight; y++) {
         for (int x = 0; x < m_depthWidth; x++) {
-
           DepthSpacePoint depthSpacePoint = { static_cast<float>(x), static_cast<float>(y) };
           UINT16 depth = m_depthBuffer[y * m_depthWidth + x];
-
-          // Coordinate Mapping Depth to Color Space, and Setting PointCloud RGB
-          ColorSpacePoint colorSpacePoint = { 0.0f, 0.0f };
-          m_mapper->MapDepthPointToColorSpace(depthSpacePoint, depth, &colorSpacePoint);
-          int colorX = static_cast<int>(std::floor(colorSpacePoint.X + 0.5f));
-          int colorY = static_cast<int>(std::floor(colorSpacePoint.Y + 0.5f));
+          int index = static_cast<int>(std::floor(depth/float(depthPitch) + 0.5f));
+          if (index < 0) { index = 0; }
+          if (index >= m_NumTable) { index = m_NumTable - 1; }
+          int cindex = m_depthColorTable[index][y][x];
           CameraSpacePoint cameraSpacePoint = { FLT_NAN, FLT_NAN, FLT_NAN };
           float rgb = FLT_NAN;
-          if ((0 <= colorX) && (colorX < m_colorWidth) && (0 <= colorY) && (colorY < m_colorHeight)) {
-            RGBQUAD color = m_colorBuffer[colorY * m_colorWidth + colorX];
+#if 1
+          if (cindex >= 0 && cindex < m_colorBuffer.size()) {
+            RGBQUAD color = m_colorBuffer[cindex];
             uint32_t ui = (color.rgbRed << 16) | (color.rgbGreen << 8) | color.rgbBlue;
             rgb = *reinterpret_cast<float*>(&ui);
             m_mapper->MapDepthPointToCameraSpace(depthSpacePoint, depth, &cameraSpacePoint);
           }
-
+#else
+          RGBQUAD color;
+          if (cindex >= 0 && cindex < m_colorBuffer.size()) {
+            color = m_colorBuffer[cindex];
+          } else {
+            color.rgbRed = 255;
+            color.rgbGreen = 0;
+            color.rgbBlue = 0;
+          }
+          uint32_t ui = (color.rgbRed << 16) | (color.rgbGreen << 8) | color.rgbBlue;
+          rgb = *reinterpret_cast<float*>(&ui);
+          m_mapper->MapDepthPointToCameraSpace(depthSpacePoint, depth, &cameraSpacePoint);
+#endif
           //座標変換の前にy軸とz軸を反転させる
           Vector3f tmp(-cameraSpacePoint.X, cameraSpacePoint.Y, -cameraSpacePoint.Z);
           if (m_coordinateTransformation) {

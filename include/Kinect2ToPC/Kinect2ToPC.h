@@ -339,6 +339,11 @@ class Kinect2ToPC
 
    bool m_running;
 
+   static const int m_NumTable = 50;
+   static const int depthPitch = 100; //[mm]
+   int m_depthColorTable[m_NumTable][424][512];
+   bool m_first;
+
    template<class Interface>
    inline void SafeRelease(Interface*& IRelease)
    {
