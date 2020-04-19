@@ -2,17 +2,17 @@
 
 大阪電気通信大学  
 升谷 保博  
-2020年4月18日（PCLを使わないようにした）
+2020年4月19日（入力ポート・コンフィギュレーションの追加）
 
 ## はじめに
 
-- Microsoft Kinect v2から深度と色の情報を読み取り，RTC:PCLのPointCloud型（`PointCloudTypes::PointCoud`）を
+- Microsoft Kinect Xbox One (Kinect v2)から深度と色の情報を読み取り，RTC:PCLのPointCloud型（`PointCloudTypes::PointCoud`）を
 出力するRTコンポーネントです．
 - 以下の環境で開発，動作確認しています．
   - Windows 10 64bit版
   - Visual Studio 2019 x64
   - OpenRTM-aist 1.2.1 64bit版
-  - Microsoft Kinect Xbox One (Kinect v2)
+  - Eigen 3.3.7
   - Kinect for Windows SDK v2.0
 - CMakeでKinect SDKを見つけるモジュールは杉浦 司氏の
 [`FindKinectSDK2.cmake`](https://github.com/UnaNancyOwen/KinectGrabber/blob/Kinect2Grabber/Sample/FindKinectSDK2.cmake)
@@ -28,6 +28,7 @@ Choeonoidの深度センサのモデルに合わせるためにこのように�
 ## 準備
 
 - [OpenRTM-aist](http://www.openrtm.org/openrtm/)をインストール．
+- [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)をインストール．PCL AllInOneパッケージに付属のものでも構わない．
 - [Kinect for Windows SDK v2.0](https://www.microsoft.com/en-us/download/details.aspx?id=44561)
 をインストール．
 
@@ -37,13 +38,14 @@ Choeonoidの深度センサのモデルに合わせるためにこのように�
 をクローンかダウンロードする．
 - CMake
   - ビルドディレクトリはトップ直下の`build`
-  - - ConfigureはVisual Studioのバージョンとプラットフォームに合わせる．
+  - ConfigureはVisual Studioのバージョンとプラットフォームに合わせる．
+  - 必要に応じて変数EIGEN_DIRの値を設定する．
 - `build\Kinect2ToPC.sln`をVisual Studioで開く．
 - パフォーマンスを出すために，Releaseでビルドがお勧め．
 
 ## 使い方
 
-- KinectをUSB3のポートに接続する．
+- Kinect v2をUSB3のポートに接続する．
 - 出力されるデータ量が多いので，CORBAのデフォルトの設定ではエラーになります．
 rtc.confに`corba.args: -ORBgiopMaxMsgSize`の設定が必要です．
 トップディレクトリのrtc.confでは`corba.args: -ORBgiopMaxMsgSize 20971520`
@@ -72,10 +74,43 @@ rtc.confに`corba.args: -ORBgiopMaxMsgSize`の設定が必要です．
   - 4: "g",13,1,1
   - 5: "r",14,1,1
 
+### 入力ポート
+- command
+  - 説明： 外部からの指令を受け付ける
+    - stop 処理を停止
+    - start 処理を開始
+  - 型： RTC::TimedString
+
 ### 出力ポート
 - pc
   - 説明： 点群データ
   - 型： PointCloudTypes::PointCloud
+
+### コンフィギュレーション
+- transX 
+  - 説明： 座標変換の並進x成分 [m]
+  - 型： float
+  - デフォルト値： 0.0
+- transY
+  - 説明： 座標変換の並進y成分 [m]
+  - 型： float
+  - デフォルト値： 0.0
+- transZ
+  - 説明： 座標変換の並進z成分 [m]
+  - 型： float
+  - デフォルト値： 0.0
+- rotX
+  - 説明： 座標変換の回転x成分 [deg]
+  - 型： float
+  - デフォルト値： 0.0
+- rotY
+  - 説明： 座標変換の回転y成分 [deg]
+  - 型： float
+  - デフォルト値： 0.0
+- rotZ
+  - 説明： 座標変換の回転z成分 [deg]
+  - 型： float
+  - デフォルト値： 0.0
 
 ## 既知の問題・TODO
 
@@ -86,6 +121,7 @@ rtc.confに`corba.args: -ORBgiopMaxMsgSize`の設定が必要です．
 Kinect SDK 2.0の`MapDepthPointToColorSpace`に時間がかかっていることまではわかっています．
 
 ## 履歴
+- 2020年4月19日 入力ポート・コンフィギュレーションの追加
 - 2020年4月18日 PCLを使わないようにした．開発環境をVS2019へ移行．
 - 2018年1月4日 VS2015とPCL 1.8.1へ移行
 - 2017年11月27日 最初のリリース
