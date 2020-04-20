@@ -2,7 +2,7 @@
 
 大阪電気通信大学  
 升谷 保博  
-2020年4月19日（入力ポート・コンフィギュレーションの追加）
+2020年4月20日（深度カラー対応表の試み）
 
 ## はじめに
 
@@ -117,10 +117,11 @@ rtc.confに`corba.args: -ORBgiopMaxMsgSize`の設定が必要です．
 - [`pointcloud.idl`](https://github.com/gbiggs/rtcpcl/blob/master/pc_type/pointcloud.idl)に記述されている仕様と，[RT-Components for the Point Cloud Library](https://github.com/gbiggs/rtcpcl/)の関数の仕様が異なっていますが，`pointcloud.idl`本来の仕様のデータを出力しています．
 - 1回に送出するデータ量が約3.3MB．もっと圧縮して送る方がいいのかもしれません．
 - Windowsでしか動作しません．
-- Kinectは30[fps]でデータを出力していますが，このコンポーネントは12[fps]（Intel Core i5の場合）程度でしか出力できません．
-Kinect SDK 2.0の`MapDepthPointToColorSpace`に時間がかかっていることまではわかっています．
+- 深度カラー対応表を利用することで，Panasonic CF-SZ5（Intel Core i5-6300U）において単体実行の場合の場合，他のプロセスが少なければ30[fps]を達成しています．
+- 深度カラー対応表において，深度を100[mm]刻みで表現しているので，これによる精度劣化の検証が必要です．
 
 ## 履歴
+- 2020年4月20日 深度カラー対応表の試み
 - 2020年4月19日 入力ポート・コンフィギュレーションの追加
 - 2020年4月18日 PCLを使わないようにした．開発環境をVS2019へ移行．
 - 2018年1月4日 VS2015とPCL 1.8.1へ移行
